@@ -1,0 +1,77 @@
+#### Debian 9 preceed file for Packer build
+
+### Localization
+d-i debian-installer/locale string en_US.UTF-8
+d-i debian-installer/keymap select us
+d-i keymap select us
+d-i console-setup/ask_detect boolean false 
+d-i keyboard-configuration/xkb-keymap string us
+
+### Network configuration
+# Network configuration moved to boot command
+# for ease of variable injection
+
+# d-i netcfg/disable_dhcp boolean true
+# d-i netcfg/choose_interface select auto
+# d-i netcfg/get_hostname string debian9
+# d-i netcfg/get_domain string local
+# d-i netcfg/get_ipaddress string 10.122.112.113
+# d-i netcfg/get_netmask string 255.255.254.0
+# d-i netcfg/get_gateway string 10.122.113.254
+# d-i netcfg/get_nameservers string 8.8.8.8
+# d-i netcfg/confirm_static boolean true
+
+### APT setup
+d-i apt-setup/contrib boolean true
+## Disable prompts for additional CD scans
+d-i apt-setup/cdrom/set-first boolean false
+d-i apt-setup/cdrom/set-next boolean false   
+d-i apt-setup/cdrom/set-failed boolean false
+
+### Mirror settings
+d-i mirror/protocol string http
+d-i mirror/country string manual
+d-i mirror/http/hostname string deb.debian.org
+d-i mirror/http/directory string /debian
+d-i mirror/suite string stretch
+d-i mirror/http/proxy string
+
+### User setup
+d-i passwd/root-login boolean true
+d-i passwd/make-user boolean false
+d-i passwd/root-password password root
+d-i passwd/root-password-again password root
+d-i user-setup/encrypt-home boolean false
+d-i preseed/late_command string in-target sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config ; echo 'PermitRootLogin yes' >> /target/etc/ssh/sshd_config ;
+
+### Clock and time zone setup
+d-i clock-setup/utc boolean true
+d-i time/zone string GMT
+d-i clock-setup/ntp boolean true
+
+### Partitioning
+d-i partman-auto/disk string /dev/sda
+d-i partman-auto/method string regular
+d-i partman-auto/choose_recipe select atomic
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+d-i partman/mount_style select uuid
+
+### GRUB installer
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/bootdev string /dev/sda
+
+### Package selection
+tasksel tasksel/first multiselect ssh-server
+d-i pkgsel/include string open-vm-tools vim sudo curl
+d-i pkgsel/upgrade select none
+## Disable prompt for survey
+popularity-contest popularity-contest/participate boolean false
+
+### Misc options
+# Disable that annoying WEP key dialog.
+d-i netcfg/wireless_wep string
+# Avoid that last message about the install being complete.
+d-i finish-install/reboot_in_progress note
